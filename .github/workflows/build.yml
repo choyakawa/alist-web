@@ -50,6 +50,6 @@ jobs:
         with:
           branch: main
           directory: web-dist
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.MY_TOKEN }}
           repository: choyakawa/alist-web-dist
           force: true
