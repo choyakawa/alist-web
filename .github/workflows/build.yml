@@ -38,8 +38,8 @@ jobs:
       - name: Checkout dist repo
         uses: actions/checkout@v4
         with:
-          repository: alist-org/web-dist
-          ref: dev
+          repository: choyakawa/alist-web-dist
+          ref: main
           path: web-dist
           persist-credentials: false
           fetch-depth: 0
@@ -49,7 +49,7 @@ jobs:
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.MY_TOKEN }}
-          branch: dev
+          branch: main
           directory: web-dist
           repository: choyakawa/alist-web-dist
           force: true
