@@ -44,13 +44,6 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
 
-      - name: Build
-        run: |
-          cd alist-web
-          pnpm install
-          pnpm i18n:build
-          pnpm build
-          cd ..
 
       - name: Upload dist files
         uses: ad-m/github-push-action@master
