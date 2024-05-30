@@ -16,27 +16,31 @@ import { currentLang } from "~/app/i18n"
 import { AutoHeightPlugin, VideoBox } from "./video_box"
 import { ArtPlayerIconsSubtitle } from "~/components/icons"
 import { useNavigate } from "@solidjs/router"
-import mkvExtract from "./mkvExtract";
+import mkvExtract from "./mkvExtract"
 
 interface Subtitle {
-  name: string;
-  url: string;
+  name: string
+  url: string
 }
 
-async function extractEmbeddedSubtitlesFromFile(file: File): Promise<Subtitle[]> {
+async function extractEmbeddedSubtitlesFromFile(
+  file: File,
+): Promise<Subtitle[]> {
   return new Promise((resolve, reject) => {
-      mkvExtract(file, (error, files) => {
-          if (error) {
-              console.error(error);
-              return reject(error);
-          }
-          const subtitles: Subtitle[] = files.filter(f => f.name.endsWith(".ass") || f.name.endsWith(".ssa")).map(f => ({
-              name: `内嵌字幕 - ${f.name}`,
-              url: URL.createObjectURL(new Blob([f.data]))
-          }));
-          resolve(subtitles);
-      });
-  });
+    mkvExtract(file, (error, files) => {
+      if (error) {
+        console.error(error)
+        return reject(error)
+      }
+      const subtitles: Subtitle[] = files
+        .filter((f) => f.name.endsWith(".ass") || f.name.endsWith(".ssa"))
+        .map((f) => ({
+          name: `内嵌字幕 - ${f.name}`,
+          url: URL.createObjectURL(new Blob([f.data])),
+        }))
+      resolve(subtitles)
+    })
+  })
 }
 
 const Preview = () => {
@@ -315,53 +319,57 @@ const Preview = () => {
     player = new Artplayer(option)
     let auto_fullscreen: boolean
     switch (searchParams["auto_fullscreen"]) {
-        case "true":
-            auto_fullscreen = true
-        case "false":
-            auto_fullscreen = false
-        default:
-            auto_fullscreen = false
+      case "true":
+        auto_fullscreen = true
+      case "false":
+        auto_fullscreen = false
+      default:
+        auto_fullscreen = false
     }
     player.on("ready", () => {
-        player.fullscreen = auto_fullscreen
+      player.fullscreen = auto_fullscreen
 
-        // 获取视频文件 URL
-        const fileUrl = player.url;
-        const fileExtension = fileUrl.split('.').pop().toLowerCase();
+      // 获取视频文件 URL
+      const fileUrl = player.url
+      const fileExtension = fileUrl.split(".").pop().toLowerCase()
 
-        // 只有在扩展名为 mkv 时才进行字幕提取
-        if (fileExtension === 'mkv') {
-            fetch(fileUrl)
-                .then(response => response.blob())
-                .then(blob => {
-                    const file = new File([blob], `video.${fileExtension}`, { type: blob.type });
-                    extractEmbeddedSubtitlesFromFile(file).then(subtitles => {
-                        if (subtitles.length > 0) {
-                            const subtitleSettings = player.settings?.find(setting => setting.id === "setting_subtitle");
-                            if (subtitleSettings) {
-                                subtitles.forEach(sub => {
-                                    subtitleSettings.selector.unshift({
-                                        default: false,
-                                        html: `<span style="color:blue">${sub.name}</span>`,
-                                        name: sub.name,
-                                        url: sub.url,
-                                    });
-                                });
-                                player.setting.update(subtitleSettings);
-                            }
-                        }
-                    });
-                })
-                .catch(error => {
-                    console.error(error);
-                });
-        }
+      // 只有在扩展名为 mkv 时才进行字幕提取
+      if (fileExtension === "mkv") {
+        fetch(fileUrl)
+          .then((response) => response.blob())
+          .then((blob) => {
+            const file = new File([blob], `video.${fileExtension}`, {
+              type: blob.type,
+            })
+            extractEmbeddedSubtitlesFromFile(file).then((subtitles) => {
+              if (subtitles.length > 0) {
+                const subtitleSettings = player.settings?.find(
+                  (setting) => setting.id === "setting_subtitle",
+                )
+                if (subtitleSettings) {
+                  subtitles.forEach((sub) => {
+                    subtitleSettings.selector.unshift({
+                      default: false,
+                      html: `<span style="color:blue">${sub.name}</span>`,
+                      name: sub.name,
+                      url: sub.url,
+                    })
+                  })
+                  player.setting.update(subtitleSettings)
+                }
+              }
+            })
+          })
+          .catch((error) => {
+            console.error(error)
+          })
+      }
     })
     player.on("video:ended", () => {
-        if (!autoNext()) return
-        next_video()
+      if (!autoNext()) return
+      next_video()
     })
-})
+  })
   onCleanup(() => {
     player?.destroy()
   })
